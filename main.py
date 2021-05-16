@@ -4,12 +4,12 @@ import subprocess
 
 
 try:
-    from bs4 import BeautifulStoneSoup as bs
+    from bs4 import BeautifulSoup as bs
 except ImportError:
     try:
         print("Загрузка библиотеки beautifulsoup4...")
         subprocess.run(["pip", "install", "beautifulsoup"], shell=True)
-        from bs4 import BeautifulStoneSoup as bs
+        from bs4 import BeautifulSoup as bs
     except ImportError:
         print(f"Ошибка при импортировании библиотеки bs4")
     except Exception as ex:
@@ -20,15 +20,17 @@ except ImportError:
 class Searcher:
 
     def __init__(self):
+        self.data = {}
         self.headers = {}
         self.debug = 0
 
     def get_login_password(self):
-        self.headers['login'] = input("Введите логин: ")
-        self.headers['password'] = input("Введите пароль: ")
+        self.data['login'] = input("Введите логин: ")
+        self.data['password'] = input("Введите пароль: ")
+        self.headers['cookies'] = input("Введите cookie: ")
 
     def check_and_get_login_password(self):
-        if 'login' not in self.headers or 'password' not in self.headers:
+        if 'login' not in self.data or 'password' not in self.data:
             self.get_login_password()
 
     def get_one_question(self, url=None):
@@ -37,8 +39,10 @@ class Searcher:
         if url is None:
             url = input("Вставте ссылку: ")
 
-        _r = req.get(url, self.headers)
+        _r = req.get(url, data=self.data, headers=self.headers)
         print(_r.status_code)
+        soup = bs(_r.content, "html.parser")
+        print(soup.h2)
 
     def get_all_questions(self):
         self.check_and_get_login_password()
@@ -80,6 +84,9 @@ def start() -> None:
 
         elif choice == 1:
             searcher.get_all_questions()
+
+        elif choice == 2:
+            searcher.get_one_question()
 
 
 if __name__ == '__main__':
